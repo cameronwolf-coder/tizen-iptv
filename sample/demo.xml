@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<tv>
+<programme channel="demo.big" start="20260626235629 +0000" stop="20260627004129 +0000"><title>Big Buck Bunny: Live Now</title></programme>
+<programme channel="demo.big" start="20260627004129 +0000" stop="20260627013629 +0000"><title>Big Buck Bunny: Coming Up</title></programme>
+<programme channel="demo.tears" start="20260626235629 +0000" stop="20260627004129 +0000"><title>Tears of Steel: Live Now</title></programme>
+<programme channel="demo.tears" start="20260627004129 +0000" stop="20260627013629 +0000"><title>Tears of Steel: Coming Up</title></programme>
+<programme channel="demo.apple" start="20260626235629 +0000" stop="20260627004129 +0000"><title>Apple BipBop: Live Now</title></programme>
+<programme channel="demo.apple" start="20260627004129 +0000" stop="20260627013629 +0000"><title>Apple BipBop: Coming Up</title></programme>
+<programme channel="demo.unified" start="20260626235629 +0000" stop="20260627004129 +0000"><title>Unified Demo: Live Now</title></programme>
+<programme channel="demo.unified" start="20260627004129 +0000" stop="20260627013629 +0000"><title>Unified Demo: Coming Up</title></programme>
+</tv>
