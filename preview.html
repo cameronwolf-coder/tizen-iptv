@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Preview loader</title></head>
+<body style="background:#0b0f17;color:#cdd7ea;font:24px sans-serif;padding:40px">
+Loading demo playlist…
+<script>
+  // Seed the demo config + clear any cached playlist, then jump into the app.
+  var base = location.origin;
+  localStorage.setItem('iptv.cfg', JSON.stringify({ m3u: base + '/sample/demo.m3u', epg: base + '/sample/demo.xml' }));
+  ['iptv.channels','iptv.cats','iptv.stamp'].forEach(function(k){ localStorage.removeItem(k); });
+  location.replace('index.html');
+</script>
+</body></html>
