@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Preview loader</title></head>
+<body style="background:#0b0f17;color:#cdd7ea;font:24px sans-serif;padding:40px">
+Loading your real channel list (via local proxy)…
+<script src="preview.local.js" onerror="window.__noLocal=1"></script>
+<script>
+  // Credentials are NOT committed. Put them in preview.local.js (gitignored):
+  //   window.PREVIEW_CREDS = { user: 'xxx', pass: 'yyy' };
+  var c = window.PREVIEW_CREDS || { user: 'YOUR_USERNAME', pass: 'YOUR_PASSWORD' };
+  var base = location.origin + '/prov';
+  localStorage.setItem('iptv.cfg', JSON.stringify({
+    type: 'xtream', base: base, user: c.user, pass: c.pass, epg: ''
+  }));
+  ['iptv.channels','iptv.cats','iptv.stamp'].forEach(function(k){ localStorage.removeItem(k); });
+  if (!window.PREVIEW_CREDS) document.body.innerHTML =
+    'Create <b>preview.local.js</b> with your credentials first (see the comment in preview-xtream.html).';
+  else location.replace('index.html');
+</script>
+</body></html>
