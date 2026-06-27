@@ -1,0 +1,79 @@
+/* TV-first styling. Base canvas 1920x1080. GPU-friendly: transforms over layout. */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 1920px; height: 1080px; overflow: hidden; background: #0b0f17; color: #e8edf5;
+  font-family: "Tizen Sans", "Segoe UI", Roboto, sans-serif; -webkit-user-select: none; user-select: none; }
+
+#app { position: absolute; inset: 0; }
+.view { position: absolute; inset: 0; }
+.hidden { display: none !important; }
+
+/* Video planes sit behind everything */
+#av-player, #html5-player { position: absolute; inset: 0; width: 1920px; height: 1080px; background: #000; z-index: 0; }
+#html5-player { object-fit: contain; }
+
+/* ---- Browser layout: categories | channels | preview ---- */
+#browser { display: flex; z-index: 2; background: linear-gradient(135deg,#0b0f17,#121a2b); }
+.col { height: 1080px; }
+#categories { width: 380px; padding: 40px 0; overflow: hidden; border-right: 1px solid #1d2740; }
+#channels   { flex: 1; display: flex; flex-direction: column; }
+#preview    { width: 520px; padding: 60px 48px; border-left: 1px solid #1d2740; }
+
+.cat-item, .ch-item {
+  height: 84px; display: flex; align-items: center; gap: 20px; padding: 0 40px;
+  font-size: 30px; color: #aeb9cc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  transition: transform .08s ease; will-change: transform;
+}
+.cat-item .count { margin-left: auto; font-size: 22px; color: #5e6b85; }
+.ch-item .logo { width: 56px; height: 56px; flex: none; border-radius: 8px; background:#1a2336 center/contain no-repeat; }
+.ch-item .num { width: 70px; color:#5e6b85; font-size: 24px; }
+.ch-item .name { overflow: hidden; text-overflow: ellipsis; }
+.ch-item .fav { margin-left: auto; color:#f5b301; opacity: 0; }
+.ch-item.is-fav .fav { opacity: 1; }
+
+.focused { color: #fff; background: linear-gradient(90deg, rgba(58,122,255,.35), rgba(58,122,255,0));
+  box-shadow: inset 4px 0 0 #3a7aff; transform: scale(1.0); }
+.cat-item.active { color:#fff; }
+
+/* ---- Virtualized channel list ---- */
+#channel-search { height: 90px; padding: 0 40px; display: flex; align-items: center; }
+#search-box { width: 100%; height: 60px; background:#101728; border:2px solid #243152; border-radius:12px;
+  color:#e8edf5; font-size:26px; padding:0 24px; }
+#search-box.focused { border-color:#3a7aff; }
+#channel-viewport { position: relative; flex: 1; overflow: hidden; }
+#channel-track { position: absolute; left: 0; right: 0; top: 0; will-change: transform; }
+
+/* ---- Preview pane ---- */
+#preview-logo { width: 100%; height: 240px; background: #0e1626 center/contain no-repeat; border-radius:16px; }
+#preview-name { font-size: 40px; font-weight: 600; margin: 28px 0 18px; }
+.epg-now { font-size: 28px; color:#cdd7ea; }
+.epg-next{ font-size: 24px; color:#7e8aa6; margin-top: 10px; }
+
+/* ---- Player OSD ---- */
+#player-overlay { z-index: 3; }
+#osd { position: absolute; left: 0; right: 0; bottom: 0; padding: 60px 80px 70px;
+  display: flex; align-items: flex-end; gap: 40px;
+  background: linear-gradient(to top, rgba(0,0,0,.85), rgba(0,0,0,0)); transition: opacity .25s; }
+#osd.hide { opacity: 0; }
+#osd-logo { width: 120px; height: 120px; flex:none; background:#111 center/contain no-repeat; border-radius:14px; }
+#osd-name { font-size: 52px; font-weight: 700; }
+#osd-now  { font-size: 30px; color:#cdd7ea; margin-top: 12px; }
+#osd-progress { width: 760px; height: 8px; background: rgba(255,255,255,.2); border-radius: 4px; margin-top: 20px; }
+#osd-bar { height: 100%; width: 0; background:#3a7aff; border-radius:4px; }
+#osd-spinner { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  font-size:36px; color:#fff; background:rgba(0,0,0,.6); padding:24px 40px; border-radius:16px; }
+
+/* ---- Setup ---- */
+#setup { z-index: 4; padding: 120px 160px; background:#0b0f17; }
+#setup h1 { font-size: 60px; margin-bottom: 60px; }
+#setup label { display:block; font-size: 28px; color:#aeb9cc; margin-bottom: 36px; }
+#setup input { display:block; width: 1100px; height: 70px; margin-top: 16px; font-size: 28px;
+  background:#101728; border:2px solid #243152; border-radius:12px; color:#fff; padding:0 24px; }
+#setup input.focused, #setup .focusable.focused { border-color:#3a7aff; outline: 3px solid #3a7aff; }
+#setup button { margin-top: 30px; height: 80px; padding: 0 60px; font-size: 30px; color:#fff;
+  background:#3a7aff; border:none; border-radius:14px; }
+#setup-status { margin-top: 30px; font-size: 26px; color:#7e8aa6; }
+
+/* ---- Toast ---- */
+#toast { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); z-index: 9;
+  background: rgba(20,28,46,.95); border:1px solid #2a3550; padding: 22px 40px; border-radius: 14px;
+  font-size: 28px; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
