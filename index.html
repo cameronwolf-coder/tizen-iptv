@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=1920, height=1080, user-scalable=no">
+    <title>Smart IPTV</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Tizen device APIs (AVPlay). Harmless 404 when opened in a desktop browser. -->
+    <script src="$WEBAPIS/webapis/webapis.js" onerror="window.__noWebapis=true"></script>
+</head>
+<body>
+    <!-- AVPlay renders to a hardware video plane behind the page -->
+    <object id="av-player" type="application/avplayer"></object>
+    <!-- HTML5 fallback for desktop-browser testing -->
+    <video id="html5-player" playsinline></video>
+
+    <div id="app">
+        <!-- Channel browser -->
+        <div id="browser" class="view">
+            <aside id="categories" class="col" aria-label="Categories"></aside>
+            <main id="channels" class="col">
+                <div id="channel-search"><input id="search-box" type="text" placeholder="Search channels…" readonly></div>
+                <div id="channel-viewport"><div id="channel-track"></div></div>
+            </main>
+            <section id="preview" class="col">
+                <div id="preview-logo"></div>
+                <div id="preview-name"></div>
+                <div id="preview-now" class="epg-now"></div>
+                <div id="preview-next" class="epg-next"></div>
+            </section>
+        </div>
+
+        <!-- Fullscreen playback overlay -->
+        <div id="player-overlay" class="hidden">
+            <div id="osd">
+                <div id="osd-logo"></div>
+                <div id="osd-text">
+                    <div id="osd-name"></div>
+                    <div id="osd-now"></div>
+                    <div id="osd-progress"><div id="osd-bar"></div></div>
+                </div>
+            </div>
+            <div id="osd-spinner" class="hidden">Loading…</div>
+        </div>
+
+        <!-- First-run / settings -->
+        <div id="setup" class="view hidden">
+            <h1>Smart IPTV — Setup</h1>
+            <label>Playlist (M3U) URL<input id="cfg-m3u" type="text" placeholder="http://provider/get.php?username=…&type=m3u_plus"></label>
+            <label>EPG (XMLTV) URL — optional<input id="cfg-epg" type="text" placeholder="http://provider/xmltv.php?username=…"></label>
+            <button id="cfg-save" class="focusable">Save &amp; Load</button>
+            <div id="setup-status"></div>
+        </div>
+
+        <div id="toast" class="hidden"></div>
+    </div>
+
+    <!-- HLS for desktop-browser preview; on the TV AVPlay is used instead and this stays idle -->
+    <script src="js/hls.min.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/m3u.js"></script>
+    <script src="js/xtream.js"></script>
+    <script src="js/epg.js"></script>
+    <script src="js/nav.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
