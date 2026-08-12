@@ -292,8 +292,8 @@
   }
   function playChannel(ch) {
     S.zone = 'player';
-    var url = (MODE === 'xtream' && ch.stream_id && Player.backend === 'html5')
-      ? X.streamUrl(ch.stream_id, true) : ch.url;
+    var url = (MODE === 'xtream' && ch.stream_id)
+      ? X.streamUrl(ch.stream_id, Player.backend === 'html5') : ch.url;
     Store.setLast(ch.url);
     Player.play(url);
     showOSD(ch);

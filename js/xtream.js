@@ -53,7 +53,7 @@
   Xtream.prototype.liveStreams = function (catId) { return this.api('get_live_streams', catId != null ? '&category_id=' + catId : ''); };
   Xtream.prototype.streamUrl = function (id, hls) {
     return hls ? this.base + '/live/' + this.user + '/' + this.pass + '/' + id + '.m3u8'
-               : this.base + '/' + this.user + '/' + this.pass + '/' + id;
+               : this.base + '/live/' + this.user + '/' + this.pass + '/' + id + '.ts';
   };
   // now/next for a live stream id; resolves {now,next} or null
   Xtream.prototype.shortEpg = function (streamId) {
