@@ -14,6 +14,23 @@
 
   function read(k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
   function write(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+
+  function migrateLegacyValue(from, to) {
+    try {
+      if (localStorage.getItem(to) !== null) return;
+      var value = localStorage.getItem(from);
+      if (value !== null) localStorage.setItem(to, value);
+    } catch (e) {}
+  }
+
+  // TizenBrew modules share one localhost origin. Copy the original module's
+  // on-device values once, without embedding credentials or deleting its data.
+  migrateLegacyValue('iptv.cfg', K.CFG);
+  migrateLegacyValue('iptv.channels', K.CHANNELS);
+  migrateLegacyValue('iptv.cats', K.CATS);
+  migrateLegacyValue('iptv.stamp', K.STAMP);
+  migrateLegacyValue('iptv.favs', K.FAVS);
+  migrateLegacyValue('iptv.last', K.LAST);
   function isTizenBrew() {
     return location.protocol === 'http:' &&
       location.hostname === '127.0.0.1' &&

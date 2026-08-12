@@ -53,6 +53,10 @@ TizenBrew loads the app from a **public** GitHub repository through jsDelivr.
 Future releases only need a GitHub push and a TizenBrew refresh—no Samsung
 certificate rebuild.
 
+Wolf TV 1.0.2 automatically imports the original module's on-device playlist,
+EPG, favorites, cached guide, and last-watched settings on first launch. Existing
+Wolf TV settings win, and the original data is left untouched.
+
 ### Native widget fallback
 
 Install Tizen Studio, create a Samsung author/distributor certificate, enable

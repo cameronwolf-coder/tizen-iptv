@@ -1,7 +1,7 @@
 {
   "name": "wolf-tv",
   "appName": "Wolf TV",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A fast, remote-first IPTV player for Samsung Tizen TVs.",
   "packageType": "app",
   "appPath": "index.html",
