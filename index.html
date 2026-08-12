@@ -14,47 +14,94 @@
     <!-- HTML5 fallback for desktop-browser testing -->
     <video id="html5-player" playsinline></video>
 
-    <div id="app">
-        <!-- Channel browser -->
-        <div id="browser" class="view">
-            <aside id="categories" class="col" aria-label="Categories"></aside>
-            <main id="channels" class="col">
-                <div id="channel-search"><input id="search-box" type="text" placeholder="Search channels…" readonly></div>
-                <div id="channel-viewport"><div id="channel-track"></div></div>
-            </main>
-            <section id="preview" class="col">
-                <div id="preview-logo"></div>
-                <div id="preview-name"></div>
-                <div id="preview-now" class="epg-now"></div>
-                <div id="preview-next" class="epg-next"></div>
-                <div id="remote-status" class="epg-next" aria-live="polite"></div>
-            </section>
+    <div id="app" role="application" aria-label="Wolf TV">
+        <div id="browser" class="view" aria-label="Live channel guide">
+            <header id="masthead">
+                <div id="brand">
+                    <span id="brand-mark" aria-hidden="true">W</span>
+                    <div>
+                        <div id="brand-name">Wolf TV</div>
+                        <div id="brand-tagline">Live, without the hunt.</div>
+                    </div>
+                </div>
+                <div id="live-context">
+                    <span class="live-dot" aria-hidden="true"></span>
+                    <span>LIVE GUIDE</span>
+                    <time id="clock" aria-label="Current time"></time>
+                </div>
+            </header>
+
+            <div id="guide-shell">
+                <aside id="categories" class="col" aria-label="Channel groups">
+                    <div class="panel-heading">
+                        <span class="eyebrow">BROWSE</span>
+                        <span class="panel-title">Groups</span>
+                    </div>
+                    <div id="category-track" role="listbox" aria-label="Channel groups"></div>
+                </aside>
+                <main id="channels" class="col" aria-label="Channels">
+                    <div id="channel-search">
+                        <span class="search-icon" aria-hidden="true"></span>
+                        <input id="search-box" type="search" aria-label="Search channels" placeholder="Search channels" readonly>
+                        <span class="key-hint">◀ LEFT · GROUPS</span>
+                    </div>
+                    <div id="guide-meta" aria-live="polite"></div>
+                    <div id="channel-viewport">
+                        <div id="channel-track" role="listbox" aria-label="Available channels"></div>
+                        <div id="scroll-rail" class="hidden" aria-hidden="true"><div id="scroll-thumb"></div></div>
+                    </div>
+                </main>
+
+                <section id="preview" class="col" aria-label="Selected channel">
+                    <div id="preview-kicker"><span class="live-dot" aria-hidden="true"></span> ON NOW</div>
+                    <div id="preview-logo"><span id="preview-logo-fallback" aria-hidden="true">W</span></div>
+                    <div id="preview-name"></div>
+                    <div id="preview-now" class="epg-now"></div>
+                    <div id="preview-progress" aria-hidden="true"><div id="preview-progress-bar"></div></div>
+                    <div id="preview-next" class="epg-next"></div>
+                    <div id="preview-action"><span class="button-glyph">OK</span><span>Watch channel</span></div>
+                    <div id="remote-status" class="remote-status" aria-live="polite"></div>
+                </section>
+            </div>
+
+            <footer id="remote-help" aria-label="Remote control shortcuts">
+                <div><span class="remote-key red"></span><strong>Favorite</strong></div>
+                <div><span class="remote-key green"></span><strong>Settings</strong></div>
+                <div><span class="remote-key yellow"></span><strong>Search</strong></div>
+                <div><span class="remote-key">↕</span><strong>Move</strong></div>
+                <div><span class="remote-key">OK</span><strong>Watch</strong></div>
+                <div class="footer-status"><span id="channel-total">0</span> channels</div>
+            </footer>
         </div>
 
-        <!-- Fullscreen playback overlay -->
         <div id="player-overlay" class="hidden">
             <div id="osd">
                 <div id="osd-logo"></div>
                 <div id="osd-text">
+                    <div class="osd-kicker">NOW PLAYING</div>
                     <div id="osd-name"></div>
                     <div id="osd-now"></div>
                     <div id="osd-progress"><div id="osd-bar"></div></div>
+                    <div class="osd-help">↑↓ Change channel · OK Info · Back Guide</div>
                 </div>
             </div>
-            <div id="osd-spinner" class="hidden">Loading…</div>
+            <div id="osd-spinner" class="hidden"><span class="spinner-dot"></span> Tuning channel</div>
         </div>
 
-        <!-- First-run / settings -->
-        <div id="setup" class="view hidden">
-            <h1>Wolf TV — Setup</h1>
-            <label>Playlist (M3U) URL<input id="cfg-m3u" type="text" placeholder="http://provider/get.php?username=…&type=m3u_plus"></label>
-            <label>EPG (XMLTV) URL — optional<input id="cfg-epg" type="text" placeholder="http://provider/xmltv.php?username=…"></label>
-            <label>Phone relay URL<input id="cfg-relay" type="url" placeholder="http://your-computer:8000"></label>
-            <button id="cfg-save" class="focusable">Save &amp; Load</button>
-            <div id="setup-status"></div>
+        <div id="setup" class="view hidden" aria-label="Wolf TV settings">
+            <div class="setup-card">
+                <div class="eyebrow">WOLF TV</div>
+                <h1>Connect your channels</h1>
+                <p class="setup-intro">Paste your provider details once. They stay on this TV.</p>
+                <label>Playlist or Xtream URL<input id="cfg-m3u" type="text" placeholder="https://provider.example/get.php?…"></label>
+                <label>Program guide URL <span>Optional</span><input id="cfg-epg" type="text" placeholder="https://provider.example/guide.xml"></label>
+                <label>Phone remote relay <span>Optional</span><input id="cfg-relay" type="url" placeholder="http://your-computer:8000"></label>
+                <button id="cfg-save" class="focusable">Save and open guide</button>
+                <div id="setup-status" aria-live="polite"></div>
+            </div>
         </div>
 
-        <div id="toast" class="hidden"></div>
+        <div id="toast" class="hidden" role="status" aria-live="polite"></div>
     </div>
 
     <!-- HLS for desktop-browser preview; on the TV AVPlay is used instead and this stays idle -->

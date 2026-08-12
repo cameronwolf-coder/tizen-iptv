@@ -28,10 +28,13 @@ remote/            phone remote page and its design-system stylesheet
 ```
 
 ## Remote controls
-- **Up/Down**: move in list or category  •  **Left/Right**: switch sidebar/list
+- **Up/Down**: move in list or category  •  **Left/Right**: switch groups/list
 - **OK**: play channel  •  **Return**: back / stop playback
 - **Up/Down or Ch+/Ch-** while playing: zap channels  •  **Info/OK**: show OSD
-- **RED**: toggle favorite  •  **GREEN**: open settings (M3U / EPG URLs)
+- **RED**: toggle favorite  •  **GREEN**: settings  •  **YELLOW**: search
+
+The guide restores focus to the last-watched channel, keeps favorites in the
+first group, and shows a position count plus scroll indicator for long lists.
 
 ## First run
 On first launch (no config) the Setup screen asks for your **M3U URL** and an
@@ -67,6 +70,21 @@ Developer Mode on the TV with the Mac's LAN IP, then run `tizen build-web`,
 Serve the folder and open in a desktop browser; arrow keys + Enter drive it.
 HLS playback in the browser needs `js/hls.min.js` (drop it in and reference it in
 index.html); on the TV, AVPlay handles streams natively with no extra library.
+
+## TV design approach
+
+Wolf TV 1.1 uses a low-density, overscan-safe 1920×1080 shell with one visible
+focus target, predictable row/column movement, 28px-or-larger functional text,
+and immediate D-pad feedback. The guide remains the center of the product:
+groups, channels, and now/next context stay on one screen rather than adding a
+recommendation-heavy home page.
+
+The interaction model follows the converging guidance in
+[Samsung Smart TV design principles](https://developer.samsung.com/smarttv/design/design-principles.html),
+[Android TV's focus system](https://developer.android.com/design/ui/tv/guides/styles/focus-system),
+[Apple's focus and selection guidance](https://developer.apple.com/design/human-interface-guidelines/focus-and-selection),
+[Fire TV's ten-foot guidelines](https://developer.amazon.com/docs/fire-tv/design-and-user-experience-guidelines.html),
+and [Roku's key design principles](https://developer.roku.com/dev/docs/key-design-principles).
 
 ## Phone remote on your LAN
 

@@ -7,9 +7,12 @@
 
   var $ = function (id) { return document.getElementById(id); };
   var els = {
-    browser: $('browser'), cats: $('categories'), track: $('channel-track'),
-    viewport: $('channel-viewport'), search: $('search-box'),
-    pLogo: $('preview-logo'), pName: $('preview-name'), pNow: $('preview-now'), pNext: $('preview-next'),
+    browser: $('browser'), cats: $('categories'), catTrack: $('category-track'),
+    track: $('channel-track'), viewport: $('channel-viewport'), search: $('search-box'),
+    guideMeta: $('guide-meta'), scrollRail: $('scroll-rail'), scrollThumb: $('scroll-thumb'),
+    channelTotal: $('channel-total'), clock: $('clock'),
+    pLogo: $('preview-logo'), pName: $('preview-name'), pNow: $('preview-now'),
+    pNext: $('preview-next'), pProgress: $('preview-progress-bar'),
     overlay: $('player-overlay'), osd: $('osd'), osdLogo: $('osd-logo'), osdName: $('osd-name'),
     osdNow: $('osd-now'), osdBar: $('osd-bar'), spinner: $('osd-spinner'),
     setup: $('setup'), cfgM3u: $('cfg-m3u'), cfgEpg: $('cfg-epg'), cfgRelay: $('cfg-relay'), cfgSave: $('cfg-save'),
@@ -20,7 +23,7 @@
     channels: [], cats: ['All'], counts: {},
     catIndex: 0, view: [], focus: 0, scrollTop: 0,
     zone: 'list',            // 'cats' | 'list' | 'search' | 'setup' | 'player'
-    query: '', epg: null, osdTimer: 0, setupFocus: 0
+    query: '', epg: null, osdTimer: 0, setupFocus: 0, didRestore: false
   };
   var X = null, MODE = 'm3u', epgCache = {};
   var remoteBridge = g.RemoteBridge ? g.RemoteBridge.create({
@@ -32,6 +35,10 @@
   }) : null;
 
   function now() { return (new Date()).getTime(); }
+  function setClock() {
+    var d = new Date(), h = d.getHours(), m = ('0' + d.getMinutes()).slice(-2);
+    els.clock.textContent = ((h + 11) % 12 + 1) + ':' + m + (h >= 12 ? ' PM' : ' AM');
+  }
   function toast(msg) {
     els.toast.textContent = msg; els.toast.classList.remove('hidden');
     clearTimeout(toast._t); toast._t = setTimeout(function () { els.toast.classList.add('hidden'); }, 2600);
@@ -54,6 +61,7 @@
   function applyPlaylist(parsed) {
     S.channels = parsed.channels;
     S.counts = parsed.counts || {};
+    els.channelTotal.textContent = parsed.channels.length;
     S.cats = parsed.cats.slice();
     if (S.cats[0] === 'All') S.cats.splice(1, 0, 'Favorites');
     else S.cats.unshift('Favorites');
@@ -127,17 +135,32 @@
       var cnt = name === 'All' ? S.channels.length
         : name === 'Favorites' ? Object.keys(Store.favs()).length
         : (S.counts[name] || '');
-      html += '<div class="cat-item' + (i === S.catIndex ? ' active' : '') +
+      html += '<div role="option" aria-selected="' + (i === S.catIndex) + '" class="cat-item' +
+        (i === S.catIndex ? ' active' : '') +
         (S.zone === 'cats' && i === S.catIndex ? ' focused' : '') + '" data-i="' + i + '">' +
         '<span>' + esc(name) + '</span><span class="count">' + cnt + '</span></div>';
     }
-    els.cats.innerHTML = html;
+    els.catTrack.innerHTML = html;
+    var active = els.catTrack.children[S.catIndex];
+    if (!active) return;
+    var top = active.offsetTop, bottom = top + active.offsetHeight;
+    if (top < els.catTrack.scrollTop) els.catTrack.scrollTop = top;
+    else if (bottom > els.catTrack.scrollTop + els.catTrack.clientHeight) {
+      els.catTrack.scrollTop = bottom - els.catTrack.clientHeight;
+    }
   }
 
   function selectCategory(i, keepFocus) {
     S.catIndex = Math.max(0, Math.min(i, S.cats.length - 1));
     buildView();
     if (!keepFocus) { S.focus = 0; S.scrollTop = 0; }
+    if (!S.didRestore && S.cats[S.catIndex] === 'All') {
+      var last = Store.getLast();
+      for (var j = 0; last && j < S.view.length; j++) {
+        if (S.view[j].url === last) { S.focus = j; break; }
+      }
+      S.didRestore = true;
+    }
     renderCats(); renderList(); updatePreview();
   }
 
@@ -164,17 +187,22 @@
     while (pool.length < n) {
       var d = document.createElement('div');
       d.className = 'ch-item';
+      d.setAttribute('role', 'option');
       d.innerHTML = '<span class="num"></span><span class="logo"></span><span class="name"></span><span class="fav">★</span>';
       d.style.position = 'absolute'; d.style.left = '0'; d.style.right = '0';
       els.track.appendChild(d); pool.push(d);
     }
   }
 
-  function viewportH() { return els.viewport.clientHeight || 990; }
+  function viewportH() { return els.viewport.clientHeight || 620; }
 
   function renderList() {
     var total = S.view.length;
     var vh = viewportH();
+    var category = S.cats[S.catIndex] || 'Channels';
+    els.guideMeta.textContent = total
+      ? category + ' · ' + (S.focus + 1) + ' of ' + total
+      : 'No channels in ' + category;
     var visible = Math.ceil(vh / ROW_H);
     var buffer = 4;
     var count = Math.min(total, visible + buffer * 2);
@@ -199,12 +227,21 @@
       row.style.top = (idx * ROW_H) + 'px';
       row.className = 'ch-item' + (favs[ch.url] ? ' is-fav' : '') +
         (S.zone === 'list' && idx === S.focus ? ' focused' : '');
+      row.setAttribute('aria-selected', idx === S.focus ? 'true' : 'false');
       row.children[0].textContent = ch.num;
       var logo = row.children[1];
       logo.style.backgroundImage = ch.logo ? ('url("' + ch.logo + '")') : 'none';
       row.children[2].textContent = ch.name;
     }
     els.track.style.transform = 'translateY(' + (-S.scrollTop) + 'px)';
+    var contentH = total * ROW_H;
+    var thumbH = contentH > vh ? Math.max(42, Math.round(vh * vh / contentH)) : vh;
+    var thumbY = contentH > vh
+      ? Math.round((vh - thumbH) * S.scrollTop / (contentH - vh))
+      : 0;
+    els.scrollRail.classList.toggle('hidden', contentH <= vh);
+    els.scrollThumb.style.height = thumbH + 'px';
+    els.scrollThumb.style.transform = 'translateY(' + thumbY + 'px)';
   }
 
   /* ---------------- preview / EPG ---------------- */
@@ -229,12 +266,22 @@
   }
   function updatePreview() {
     var ch = S.view[S.focus];
-    if (!ch) { els.pName.textContent = ''; els.pNow.textContent = ''; els.pNext.textContent = ''; els.pLogo.style.backgroundImage = 'none'; return; }
+    if (!ch) {
+      els.pName.textContent = ''; els.pNow.textContent = ''; els.pNext.textContent = '';
+      els.pLogo.style.backgroundImage = 'none'; els.pLogo.classList.remove('has-logo');
+      els.pProgress.style.width = '0';
+      return;
+    }
     els.pLogo.style.backgroundImage = ch.logo ? ('url("' + ch.logo + '")') : 'none';
+    els.pLogo.classList.toggle('has-logo', !!ch.logo);
     els.pName.textContent = ch.name;
     var e = (MODE === 'xtream') ? epgCache[ch.stream_id] : epgFor(ch);
-    els.pNow.textContent = e && e.now ? ('Now: ' + fmt(e.now)) : '';
-    els.pNext.textContent = e && e.next ? ('Next: ' + fmt(e.next)) : '';
+    els.pNow.textContent = e && e.now ? ('NOW · ' + fmt(e.now)) : 'Live programming';
+    els.pNext.textContent = e && e.next ? ('NEXT · ' + fmt(e.next)) : 'Program details unavailable';
+    if (e && e.now && e.now.e > e.now.s) {
+      els.pProgress.style.width = Math.max(0, Math.min(100,
+        (now() - e.now.s) / (e.now.e - e.now.s) * 100)) + '%';
+    } else els.pProgress.style.width = '0';
     if (MODE === 'xtream') ensureEpg(ch);
   }
 
@@ -319,13 +366,14 @@
   /* ---------------- key handling ---------------- */
   function onKey(e) {
     var k = e.keyCode;
-    // Desktop-preview aliases (harmless on TV: a remote never sends these codes):
-    // Esc -> Return/Back, F -> RED (favorite), S -> GREEN (settings).
+    // Esc -> Return/Back, F -> RED, S -> GREEN, / -> YELLOW (search).
     if (k === 27) k = KEY.RETURN;
     else if (k === 70) k = KEY.RED;
     else if (k === 83) k = KEY.GREEN;
+    else if (k === 191) k = KEY.YELLOW;
     if (S.zone === 'setup') return setupKey(k, e);
     if (S.zone === 'player') return playerKey(k, e);
+    if (S.zone === 'search') return searchKey(k, e);
     // browser zones
     if (k === KEY.RETURN) { e.preventDefault(); returnToTizenBrew(); return; }
     if (k === KEY.UP) return move(-1, e);
@@ -335,6 +383,7 @@
     if (k === KEY.ENTER) return enter(e);
     if (k === KEY.RED) { e.preventDefault(); toggleFav(); }
     if (k === KEY.GREEN) { e.preventDefault(); showSetup(); }
+    if (k === KEY.YELLOW) { e.preventDefault(); openSearch(); }
   }
 
   function move(d, e) {
@@ -365,6 +414,34 @@
     renderCats(); renderList();
   }
 
+  function applySearch() {
+    S.query = els.search.value.trim();
+    S.focus = 0; S.scrollTop = 0;
+    buildView(); renderList(); updatePreview();
+  }
+  function openSearch() {
+    S.zone = 'search';
+    els.search.removeAttribute('readonly');
+    els.search.classList.add('focused');
+    els.search.focus();
+    renderCats(); renderList();
+  }
+  function closeSearch() {
+    els.search.setAttribute('readonly', 'readonly');
+    els.search.classList.remove('focused');
+    els.search.blur();
+    S.zone = 'list';
+    renderCats(); renderList(); updatePreview();
+  }
+  function searchKey(k, e) {
+    if (k === KEY.RETURN || k === KEY.YELLOW) {
+      e.preventDefault(); closeSearch(); return;
+    }
+    if (k === KEY.DOWN || k === KEY.ENTER) {
+      e.preventDefault(); closeSearch();
+    }
+  }
+
   function playerKey(k, e) {
     e.preventDefault();
     if (k === KEY.RETURN || k === KEY.STOP) return stopPlayback();
@@ -393,8 +470,10 @@
     NAV.registerKeys();
     document.addEventListener('keydown', onKey);
     els.cfgSave.addEventListener('click', saveSetup);
+    els.search.addEventListener('input', applySearch);
     window.addEventListener('resize', renderList);
-
+    setClock();
+    setInterval(setClock, 30000);
     var cfg = Store.getConfig();
     if (cfg.type === 'xtream') { MODE = 'xtream'; X = new Xtream({ base: cfg.base, user: cfg.user, pass: cfg.pass }); }
 
