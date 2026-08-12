@@ -11,7 +11,20 @@
   var av = hasAV ? webapis.avplay : null;
   var v = document.getElementById('html5-player');
   var obj = document.getElementById('av-player');
+  var browser = document.getElementById('browser');
+  var overlay = document.getElementById('player-overlay');
   var current = null;
+
+  function setPlaybackVisible(visible) {
+    if (browser) {
+      if (visible) browser.classList.add('hidden');
+      else browser.classList.remove('hidden');
+    }
+    if (overlay) {
+      if (visible) overlay.classList.remove('hidden');
+      else overlay.classList.add('hidden');
+    }
+  }
 
   // ---------- AVPlay backend ----------
   function avListener() {
@@ -67,8 +80,8 @@
   var Player = {
     backend: hasAV ? 'avplay' : 'html5',
     on: function (ev, fn) { (listeners[ev] || (listeners[ev] = [])).push(fn); },
-    play: function (url) { current = url; hasAV ? avPlay(url) : h5Play(url); },
-    stop: function () { current = null; hasAV ? avStop() : h5Stop(); },
+    play: function (url) { current = url; setPlaybackVisible(true); hasAV ? avPlay(url) : h5Play(url); },
+    stop: function () { current = null; hasAV ? avStop() : h5Stop(); setPlaybackVisible(false); },
     current: function () { return current; }
   };
 

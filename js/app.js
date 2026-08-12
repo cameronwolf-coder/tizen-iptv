@@ -292,7 +292,6 @@
   }
   function playChannel(ch) {
     S.zone = 'player';
-    els.overlay.classList.remove('hidden');
     var url = (MODE === 'xtream' && ch.stream_id && Player.backend === 'html5')
       ? X.streamUrl(ch.stream_id, true) : ch.url;
     Store.setLast(ch.url);
@@ -325,7 +324,6 @@
 
   function stopPlayback() {
     Player.stop();
-    els.overlay.classList.add('hidden');
     S.zone = 'list';
     renderList();
   }
