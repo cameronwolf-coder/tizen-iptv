@@ -341,7 +341,7 @@
   function renderSetupFocus() {
     var e = setupEls();
     e.forEach(function (el, i) { el.classList.toggle('focused', i === S.setupFocus); });
-    if (S.setupFocus < 3) e[S.setupFocus].focus();
+    e[S.setupFocus].focus();
   }
   function saveSetup() {
     var url = els.cfgM3u.value.trim();
