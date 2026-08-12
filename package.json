@@ -1,0 +1,28 @@
+{
+  "name": "wolf-tv",
+  "appName": "Wolf TV",
+  "version": "1.0.1",
+  "description": "A fast, remote-first IPTV player for Samsung Tizen TVs.",
+  "packageType": "app",
+  "appPath": "index.html",
+  "keys": [
+    "ColorF0Red",
+    "ColorF1Green",
+    "ColorF2Yellow",
+    "ColorF3Blue",
+    "ChannelUp",
+    "ChannelDown",
+    "MediaPlayPause",
+    "MediaPlay",
+    "MediaPause",
+    "MediaStop",
+    "MediaFastForward",
+    "MediaRewind",
+    "Info"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cameronwolf-coder/tizen-iptv.git"
+  },
+  "license": "MIT"
+}

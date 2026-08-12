@@ -3,20 +3,37 @@
    next launch render from cache immediately while refreshing in the background. */
 (function (g) {
   var K = {
-    CFG: 'iptv.cfg',          // {m3u, epg}
-    CHANNELS: 'iptv.channels',// parsed [{id,name,logo,group,url,num}]
-    CATS: 'iptv.cats',        // ["All","Sports",...]
-    STAMP: 'iptv.stamp',      // last refresh epoch ms
-    FAVS: 'iptv.favs',        // {url:true}
-    LAST: 'iptv.last'         // last watched url
+    CFG: 'wolf-tv.cfg',          // {m3u, epg, relay}
+    CHANNELS: 'wolf-tv.channels',// parsed [{id,name,logo,group,url,num}]
+    CATS: 'wolf-tv.cats',        // ["All","Sports",...]
+    STAMP: 'wolf-tv.stamp',      // last refresh epoch ms
+    FAVS: 'wolf-tv.favs',        // {url:true}
+    LAST: 'wolf-tv.last',        // last watched url
+    REMOTE_TV: 'wolf-tv.remoteTv'
   };
 
   function read(k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
   function write(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+  function isTizenBrew() {
+    return location.protocol === 'http:' &&
+      location.hostname === '127.0.0.1' &&
+      location.port === '8081' &&
+      location.pathname.indexOf('/module/') === 0;
+  }
+  function defaultRelayUrl() {
+    if (isTizenBrew()) return '';
+    return (location.protocol === 'http:' || location.protocol === 'https:') ? location.origin : '';
+  }
+  function relayUrl(value) { return String(value || '').replace(/\/+$/, ''); }
 
   var Store = {
     getConfig: function () { return read(K.CFG, { m3u: '', epg: '' }); },
     setConfig: function (c) { write(K.CFG, c); },
+    getRelayUrl: function () {
+      var cfg = this.getConfig();
+      return relayUrl(cfg.relay || defaultRelayUrl());
+    },
+    isTizenBrew: isTizenBrew,
 
     getCachedPlaylist: function () {
       var ch = read(K.CHANNELS, null);
@@ -44,7 +61,11 @@
     },
 
     getLast: function () { return read(K.LAST, null); },
-    setLast: function (url) { write(K.LAST, url); }
+    setLast: function (url) { write(K.LAST, url); },
+
+    getRemoteTV: function () { return read(K.REMOTE_TV, null); },
+    setRemoteTV: function (session) { return write(K.REMOTE_TV, session); },
+    clearRemoteTV: function () { try { localStorage.removeItem(K.REMOTE_TV); } catch (e) {} }
   };
 
   // Date.now is fine in-app on the device; isolated here so it's easy to reason about.

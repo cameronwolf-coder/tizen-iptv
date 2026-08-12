@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Wolf TV companion remote primitive showcase.">
+  <title>Wolf TV Remote — Primitive Showcase</title>
+  <link rel="stylesheet" href="remote.css">
+</head>
+<body>
+  <main class="remote-shell" aria-labelledby="remote-title">
+    <header class="remote-header">
+      <div>
+        <p class="eyebrow">Companion remote</p>
+        <h1 id="remote-title">Living room control</h1>
+      </div>
+      <p class="status-badge status-badge--paired"><span class="status-dot" aria-hidden="true"></span>TV paired</p>
+    </header>
+
+    <section class="remote-section control-panel" aria-labelledby="now-playing-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Now playing</p>
+          <h2 id="now-playing-title">KQED 9</h2>
+        </div>
+        <p class="program-meta">Nature · 18 min left</p>
+      </div>
+      <div class="media-actions" aria-label="Playback controls">
+        <button class="remote-action remote-action--secondary" type="button">Back 10</button>
+        <button class="remote-action remote-action--primary" type="button">Pause</button>
+        <button class="remote-action remote-action--secondary" type="button">Forward 30</button>
+      </div>
+      <button class="remote-action remote-action--quiet remote-action--full" type="button">Open full guide</button>
+    </section>
+
+    <section class="remote-section pairing-panel" aria-labelledby="pairing-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Connection</p>
+          <h2 id="pairing-title">Pair a TV</h2>
+        </div>
+        <p class="status-badge status-badge--connecting"><span class="status-dot" aria-hidden="true"></span>Connecting</p>
+      </div>
+      <form class="pairing-form" novalidate>
+        <label for="room-code">Room code
+          <input id="room-code" name="room-code" type="text" inputmode="numeric" autocomplete="off" placeholder="Enter the six-digit code" aria-describedby="pairing-help">
+        </label>
+        <p id="pairing-help" class="field-help">Find the code in Wolf TV settings on the television.</p>
+        <div class="pairing-actions">
+          <button class="remote-action remote-action--primary" type="submit">Pair this remote</button>
+          <button class="remote-action remote-action--secondary" type="button">Use another TV</button>
+        </div>
+      </form>
+      <div class="pairing-state-specimens" aria-label="Pairing state specimens">
+        <p class="form-state form-state--loading" role="status"><span class="loading-mark" aria-hidden="true"></span>Validating room code</p>
+        <p class="form-state form-state--error" role="alert">Room codes contain six digits.</p>
+        <button class="remote-action remote-action--secondary" type="button" disabled>Pairing unavailable</button>
+      </div>
+      <div class="status-variants" aria-label="Connection status variants">
+        <p class="status-badge status-badge--attention"><span class="status-dot" aria-hidden="true"></span>Code needed</p>
+        <p class="status-badge status-badge--unavailable"><span class="status-dot" aria-hidden="true"></span>TV unavailable</p>
+      </div>
+    </section>
+
+    <section class="remote-section channel-panel" aria-labelledby="channels-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Channel guide</p>
+          <h2 id="channels-title">Find something on</h2>
+        </div>
+        <p class="channel-count">182 channels</p>
+      </div>
+      <label class="search-field" for="channel-search">
+        <span class="visually-hidden">Search the channel guide</span>
+        <input id="channel-search" name="channel-search" type="search" placeholder="Search channel or program">
+      </label>
+      <div class="filter-cluster" aria-label="Channel filters">
+        <button class="filter-chip" type="button" aria-pressed="true">All channels</button>
+        <button class="filter-chip" type="button" aria-pressed="false">Favorites</button>
+        <button class="filter-chip" type="button" aria-pressed="false">News</button>
+        <button class="filter-chip" type="button" aria-pressed="false">Sports</button>
+        <button class="filter-chip" type="button" aria-pressed="false" disabled>Movies unavailable</button>
+      </div>
+      <div class="channel-list" aria-label="Channel row states">
+        <button class="channel-row channel-row--selected" type="button" aria-pressed="true">
+          <span class="channel-number">009</span>
+          <span class="channel-copy"><strong>KQED 9</strong><small>Nature · 18 min left</small></span>
+          <span class="channel-state">On now</span>
+        </button>
+        <button class="channel-row" type="button" aria-pressed="false">
+          <span class="channel-number">025</span>
+          <span class="channel-copy"><strong>Local News</strong><small>Evening report · starts at 6:00</small></span>
+          <span class="channel-state">Guide</span>
+        </button>
+        <button class="channel-row" type="button" aria-pressed="false">
+          <span class="channel-number">206</span>
+          <span class="channel-copy"><strong>Stadium West</strong><small>Live baseball · 2nd inning</small></span>
+          <span class="channel-state">Live</span>
+        </button>
+        <button class="channel-row" type="button" aria-pressed="false" disabled>
+          <span class="channel-number">407</span>
+          <span class="channel-copy"><strong>Travel Archive</strong><small>Unavailable with this playlist</small></span>
+          <span class="channel-state">Unavailable</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="remote-section state-panel" aria-labelledby="state-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Feedback states</p>
+          <h2 id="state-title">Connection and guide recovery</h2>
+        </div>
+      </div>
+      <div class="state-grid">
+        <section class="feedback-state feedback-state--loading" role="status" aria-live="polite">
+          <span class="loading-mark" aria-hidden="true"></span>
+          <h3>Refreshing the guide</h3>
+          <p>Latest channel data is loading from the paired television.</p>
+        </section>
+        <section class="feedback-state" role="status">
+          <h3>No favorite channels yet</h3>
+          <p>Save a channel from the guide and it will appear here for quicker control.</p>
+          <button class="remote-action remote-action--secondary" type="button">Browse channels</button>
+        </section>
+        <section class="feedback-state feedback-state--error" role="alert">
+          <h3>Pairing needs attention</h3>
+          <p>The television did not confirm that room code. Check the code and try again.</p>
+          <button class="remote-action remote-action--primary" type="button">Try pairing again</button>
+        </section>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

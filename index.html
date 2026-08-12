@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=1920, height=1080, user-scalable=no">
-    <title>Smart IPTV</title>
+    <title>Wolf TV</title>
     <link rel="stylesheet" href="css/style.css">
     <!-- Tizen device APIs (AVPlay). Harmless 404 when opened in a desktop browser. -->
     <script src="$WEBAPIS/webapis/webapis.js" onerror="window.__noWebapis=true"></script>
@@ -27,6 +27,7 @@
                 <div id="preview-name"></div>
                 <div id="preview-now" class="epg-now"></div>
                 <div id="preview-next" class="epg-next"></div>
+                <div id="remote-status" class="epg-next" aria-live="polite"></div>
             </section>
         </div>
 
@@ -45,9 +46,10 @@
 
         <!-- First-run / settings -->
         <div id="setup" class="view hidden">
-            <h1>Smart IPTV — Setup</h1>
+            <h1>Wolf TV — Setup</h1>
             <label>Playlist (M3U) URL<input id="cfg-m3u" type="text" placeholder="http://provider/get.php?username=…&type=m3u_plus"></label>
             <label>EPG (XMLTV) URL — optional<input id="cfg-epg" type="text" placeholder="http://provider/xmltv.php?username=…"></label>
+            <label>Phone relay URL<input id="cfg-relay" type="url" placeholder="http://your-computer:8000"></label>
             <button id="cfg-save" class="focusable">Save &amp; Load</button>
             <div id="setup-status"></div>
         </div>
@@ -63,6 +65,7 @@
     <script src="js/epg.js"></script>
     <script src="js/nav.js"></script>
     <script src="js/player.js"></script>
+    <script src="js/remote.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

@@ -12,8 +12,8 @@
     pLogo: $('preview-logo'), pName: $('preview-name'), pNow: $('preview-now'), pNext: $('preview-next'),
     overlay: $('player-overlay'), osd: $('osd'), osdLogo: $('osd-logo'), osdName: $('osd-name'),
     osdNow: $('osd-now'), osdBar: $('osd-bar'), spinner: $('osd-spinner'),
-    setup: $('setup'), cfgM3u: $('cfg-m3u'), cfgEpg: $('cfg-epg'), cfgSave: $('cfg-save'),
-    setupStatus: $('setup-status'), toast: $('toast')
+    setup: $('setup'), cfgM3u: $('cfg-m3u'), cfgEpg: $('cfg-epg'), cfgRelay: $('cfg-relay'), cfgSave: $('cfg-save'),
+    setupStatus: $('setup-status'), toast: $('toast'), remoteStatus: $('remote-status')
   };
 
   var S = {
@@ -23,6 +23,13 @@
     query: '', epg: null, osdTimer: 0, setupFocus: 0
   };
   var X = null, MODE = 'm3u', epgCache = {};
+  var remoteBridge = g.RemoteBridge ? g.RemoteBridge.create({
+    name: 'Wolf TV',
+    getRelayUrl: function () { return Store.getRelayUrl(); },
+    onStatus: function (message) { els.remoteStatus.textContent = message; },
+    onPlay: function (channel) { playChannel(channel); },
+    onStop: function () { stopPlayback(); }
+  }) : null;
 
   function now() { return (new Date()).getTime(); }
   function toast(msg) {
@@ -52,6 +59,8 @@
     else S.cats.unshift('Favorites');
   }
 
+  function syncRemote() { if (remoteBridge) remoteBridge.sync(S.channels); }
+
   function loadFromCache() {
     var c = Store.getCachedPlaylist();
     if (!c || !c.channels.length) return false;
@@ -67,6 +76,7 @@
     httpText(cfg.m3u).then(function (txt) {
       var parsed = M3U.parse(txt);
       applyPlaylist(parsed);
+      syncRemote();
       var saved = Store.savePlaylist(parsed.channels, parsed.cats, now());
       if (!saved) toast('Loaded (too large to cache)');
       selectCategory(S.catIndex, true);
@@ -74,6 +84,7 @@
       if (!silent) toast(parsed.channels.length + ' channels');
     }).catch(function (e) {
       if (!silent) toast('Playlist failed: ' + e.message);
+      if (silent) syncRemote();
     });
     if (cfg.epg) {
       httpText(cfg.epg).then(function (txt) { S.epg = EPG.parse(txt); updatePreview(); })
@@ -101,10 +112,11 @@
       if (counts['Uncategorized']) uniq.push('Uncategorized');
       var parsed = { channels: channels, cats: ['All'].concat(uniq), counts: counts };
       applyPlaylist(parsed);
+      syncRemote();
       Store.savePlaylist(channels, parsed.cats, now()); // may exceed quota; harmless if so
       selectCategory(0, false); renderCats();
       if (!silent) toast(channels.length + ' live channels');
-    }).catch(function (e) { if (!silent) toast('Load failed: ' + e.message); });
+    }).catch(function (e) { if (!silent) toast('Load failed: ' + e.message); else syncRemote(); });
   }
 
   /* ---------------- categories ---------------- */
@@ -275,25 +287,33 @@
   function showSetup() {
     var cfg = Store.getConfig();
     els.cfgM3u.value = cfg.m3u || ''; els.cfgEpg.value = cfg.epg || '';
+    els.cfgRelay.value = cfg.relay || Store.getRelayUrl();
     els.setup.classList.remove('hidden'); els.browser.classList.add('hidden');
     S.zone = 'setup'; S.setupFocus = 0; renderSetupFocus();
   }
   function hideSetup() { els.setup.classList.add('hidden'); els.browser.classList.remove('hidden'); S.zone = 'list'; }
-  var setupEls = function () { return [els.cfgM3u, els.cfgEpg, els.cfgSave]; };
+  var setupEls = function () { return [els.cfgM3u, els.cfgEpg, els.cfgRelay, els.cfgSave]; };
   function renderSetupFocus() {
     var e = setupEls();
     e.forEach(function (el, i) { el.classList.toggle('focused', i === S.setupFocus); });
-    if (S.setupFocus < 2) e[S.setupFocus].focus();
+    if (S.setupFocus < 3) e[S.setupFocus].focus();
   }
   function saveSetup() {
     var url = els.cfgM3u.value.trim();
     if (!url) { els.setupStatus.textContent = 'Enter a playlist or Xtream URL.'; return; }
     var epg = els.cfgEpg.value.trim();
+    var relay = els.cfgRelay.value.trim().replace(/\/+$/, '');
     var xc = Xtream.parse(url); // any get.php / xmltv.php / player_api.php with user+pass -> Xtream API
-    if (xc) Store.setConfig({ type: 'xtream', base: xc.base, user: xc.user, pass: xc.pass, epg: epg });
-    else Store.setConfig({ type: 'm3u', m3u: url, epg: epg });
+    if (xc) Store.setConfig({ type: 'xtream', base: xc.base, user: xc.user, pass: xc.pass, epg: epg, relay: relay });
+    else Store.setConfig({ type: 'm3u', m3u: url, epg: epg, relay: relay });
     els.setupStatus.textContent = 'Saved. Loading…';
     hideSetup(); refreshPlaylist(false);
+  }
+
+  function returnToTizenBrew() {
+    if (!Store.isTizenBrew()) return false;
+    history.back();
+    return true;
   }
 
   /* ---------------- key handling ---------------- */
@@ -307,7 +327,7 @@
     if (S.zone === 'setup') return setupKey(k, e);
     if (S.zone === 'player') return playerKey(k, e);
     // browser zones
-    if (k === KEY.RETURN) { e.preventDefault(); return; } // already at root
+    if (k === KEY.RETURN) { e.preventDefault(); returnToTizenBrew(); return; }
     if (k === KEY.UP) return move(-1, e);
     if (k === KEY.DOWN) return move(1, e);
     if (k === KEY.LEFT) return zoneLeft(e);
@@ -355,11 +375,13 @@
 
   function setupKey(k, e) {
     if (k === KEY.UP) { e.preventDefault(); S.setupFocus = Math.max(0, S.setupFocus - 1); renderSetupFocus(); }
-    else if (k === KEY.DOWN) { e.preventDefault(); S.setupFocus = Math.min(2, S.setupFocus + 1); renderSetupFocus(); }
+    else if (k === KEY.DOWN) { e.preventDefault(); S.setupFocus = Math.min(3, S.setupFocus + 1); renderSetupFocus(); }
     else if (k === KEY.ENTER) {
-      if (S.setupFocus === 2) { e.preventDefault(); saveSetup(); }
+      if (S.setupFocus === 3) { e.preventDefault(); saveSetup(); }
     } else if (k === KEY.RETURN) {
-      e.preventDefault(); if (S.channels.length) hideSetup();
+      e.preventDefault();
+      if (S.channels.length) hideSetup();
+      else returnToTizenBrew();
     }
   }
 
@@ -381,7 +403,10 @@
       selectCategory(0, false); renderCats();
       // refresh in background if stale
       if (Store.isStale(REFRESH_MS)) refreshPlaylist(true);
-      else if (MODE !== 'xtream' && cfg.epg) { httpText(cfg.epg).then(function (t) { S.epg = EPG.parse(t); updatePreview(); }).catch(function () {}); }
+      else {
+        syncRemote();
+        if (MODE !== 'xtream' && cfg.epg) { httpText(cfg.epg).then(function (t) { S.epg = EPG.parse(t); updatePreview(); }).catch(function () {}); }
+      }
     } else {
       if (cfg.type === 'xtream' || cfg.m3u) refreshPlaylist(false); else showSetup();
     }

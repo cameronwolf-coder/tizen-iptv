@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Wolf TV companion remote.">
+  <title>Wolf TV Remote</title>
+  <link rel="stylesheet" href="remote.css">
+</head>
+<body>
+  <main id="remote-shell" class="remote-shell" aria-labelledby="remote-title">
+    <header class="remote-header">
+      <div>
+        <p class="eyebrow">Companion remote</p>
+        <h1 id="remote-title">Living room control</h1>
+      </div>
+      <p id="connection-badge" class="status-badge status-badge--connecting"><span class="status-dot" aria-hidden="true"></span><span id="connection-label">Not paired</span></p>
+    </header>
+
+    <section id="now-panel" class="remote-section control-panel" aria-labelledby="now-playing-title" hidden>
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Now playing</p>
+          <h2 id="now-playing-title">Nothing selected</h2>
+        </div>
+        <p id="now-playing-meta" class="program-meta">Choose a channel below</p>
+      </div>
+      <div class="media-actions" aria-label="Playback controls">
+        <button id="stop-button" class="remote-action remote-action--primary" type="button" disabled>Stop playback</button>
+      </div>
+    </section>
+
+    <section id="pairing-panel" class="remote-section pairing-panel" aria-labelledby="pairing-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Connection</p>
+          <h2 id="pairing-title">Pair a TV</h2>
+        </div>
+        <p class="status-badge status-badge--connecting"><span class="status-dot" aria-hidden="true"></span>Ready</p>
+      </div>
+      <form id="pairing-form" class="pairing-form" novalidate>
+        <label for="room-code">TV pairing code
+          <input id="room-code" name="room-code" type="text" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="Enter the six-digit code" aria-describedby="pairing-help pairing-status">
+        </label>
+        <p id="pairing-help" class="field-help">Find the current code in Wolf TV settings on the television.</p>
+        <p id="pairing-status" class="field-help" role="status" aria-live="polite"></p>
+        <div class="pairing-actions"><button id="pair-button" class="remote-action remote-action--primary" type="submit">Pair this remote</button></div>
+      </form>
+    </section>
+
+    <section id="channel-panel" class="remote-section channel-panel" aria-labelledby="channels-title" hidden>
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Channel guide</p>
+          <h2 id="channels-title">Find something on</h2>
+        </div>
+        <p id="channel-count" class="channel-count">Loading channels</p>
+      </div>
+      <label class="search-field" for="channel-search"><span class="visually-hidden">Search the channel guide</span><input id="channel-search" name="channel-search" type="search" placeholder="Search channel or group"></label>
+      <div id="group-filters" class="filter-cluster" aria-label="Channel groups"></div>
+      <div id="catalog-loading" class="feedback-state feedback-state--loading" role="status" aria-live="polite" hidden><span class="loading-mark" aria-hidden="true"></span><h3>Refreshing the guide</h3><p>Loading channels from the paired television.</p></div>
+      <div id="catalog-empty" class="feedback-state" role="status" hidden><h3>No channels found</h3><p>Try a different search or group.</p></div>
+      <div id="catalog-error" class="feedback-state feedback-state--error" role="alert" hidden><h3>Guide needs attention</h3><p id="catalog-error-message">The paired television could not be reached.</p><button id="retry-catalog" class="remote-action remote-action--primary" type="button">Try again</button></div>
+      <div id="channel-list" class="channel-list" aria-live="polite"></div>
+      <button id="pair-another" class="remote-action remote-action--quiet remote-action--full" type="button">Pair another TV</button>
+    </section>
+  </main>
+  <script src="remote.js"></script>
+</body>
+</html>
