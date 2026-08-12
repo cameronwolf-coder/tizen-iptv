@@ -1,6 +1,7 @@
-"""In-memory LAN relay for a Tizen IPTV phone remote."""
+"""LAN relay for a Tizen IPTV phone remote."""
 
 from collections.abc import Callable
+from os import environ
 from pathlib import Path
 from time import monotonic
 from typing import Annotated, Final, NoReturn
@@ -28,6 +29,14 @@ from remote_static import mount_static_content
 from remote_store import RelayStore
 
 UNAUTHORIZED_DETAIL: Final = "Unauthorized"
+RELAY_STATE_PATH_ENV: Final = "WOLF_TV_RELAY_STATE_PATH"
+
+
+def _production_state_path() -> Path:
+    configured = environ.get(RELAY_STATE_PATH_ENV)
+    if configured:
+        return Path(configured).expanduser()
+    return Path.home() / ".wolf-tv" / "relay-state.json"
 
 
 def _configure_tv_routes(app: FastAPI, store: RelayStore, bearer: HTTPBearer) -> None:
@@ -149,6 +158,7 @@ def _configure_tv_command_route(
 def create_app(
     static_directory: Path | None = None,
     clock: Callable[[], float] = monotonic,
+    state_path: Path | None = None,
 ) -> FastAPI:
     """Create the API before mounting the approved application assets."""
     app = FastAPI(default_response_class=ORJSONResponse)
@@ -160,7 +170,7 @@ def create_app(
         allow_headers=["Authorization", "Content-Type"],
     )
     app.add_middleware(GZipMiddleware, minimum_size=500)
-    store = RelayStore(clock)
+    store = RelayStore(clock, state_path)
     bearer = HTTPBearer(auto_error=False)
     _configure_tv_routes(app, store, bearer)
     _configure_remote_routes(app, store, bearer)
@@ -188,4 +198,4 @@ def _raise_unauthorized() -> NoReturn:
     )
 
 
-app = create_app()
+app = create_app(state_path=_production_state_path())

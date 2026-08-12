@@ -146,6 +146,43 @@ def test_paired_remote_fetches_its_tv_catalog(tmp_path: Path) -> None:
         )
 
 
+def test_paired_clients_survive_relay_restart_without_persisting_bearer_tokens(
+    tmp_path: Path,
+) -> None:
+    # Given a TV and phone paired through a relay with durable state
+    state_path = tmp_path / "relay-state.json"
+    with TestClient(
+        create_app(static_directory=tmp_path, state_path=state_path)
+    ) as client:
+        paired = register_and_pair(client)
+
+    # When the relay restarts and the phone sends a command
+    with TestClient(
+        create_app(static_directory=tmp_path, state_path=state_path)
+    ) as restarted:
+        catalog = restarted.get(
+            "/api/remote/catalog", headers=authorization(paired.remote_token)
+        )
+        queued = restarted.post(
+            "/api/remote/commands",
+            headers=authorization(paired.remote_token),
+            json={"command": "play", "key": "news"},
+        )
+        command = restarted.get(
+            "/api/tv/commands/next", headers=authorization(paired.tv_token)
+        )
+
+    # Then both clients remain paired and their raw bearer tokens never reach disk
+    assert catalog.status_code == HTTPStatus.OK
+    assert queued.status_code == HTTPStatus.ACCEPTED
+    assert NextCommandResponse.model_validate_json(
+        command.content
+    ).command == PlayCommand(command="play", key="news")
+    persisted = state_path.read_text(encoding="utf-8")
+    assert paired.tv_token not in persisted
+    assert paired.remote_token not in persisted
+
+
 def test_remote_command_is_consumed_as_the_latest_pending_command(
     tmp_path: Path,
 ) -> None:

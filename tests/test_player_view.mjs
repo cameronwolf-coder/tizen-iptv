@@ -23,7 +23,7 @@ class ClassList {
   }
 }
 
-function loadPlayer() {
+function loadPlayer(avplay = null) {
   const elements = {
     "av-player": { style: {} },
     "html5-player": {
@@ -39,6 +39,7 @@ function loadPlayer() {
   const sandbox = {
     document: { getElementById: (id) => elements[id] },
   };
+  if (avplay) sandbox.webapis = { avplay };
   sandbox.window = sandbox;
   vm.runInNewContext(playerSource, sandbox);
   return { Player: sandbox.Player, elements };
@@ -56,4 +57,47 @@ test("playback reveals the video surface and Back restores the guide", () => {
 
   assert.equal(elements.browser.classList.contains("hidden"), false);
   assert.equal(elements["player-overlay"].classList.contains("hidden"), true);
+});
+
+test("AVPlay retries an Xtream transport stream as HLS once", () => {
+  const opened = [];
+  const listeners = [];
+  const avplay = {
+    stop: () => {},
+    close: () => {},
+    open: (url) => opened.push(url),
+    setDisplayRect: () => {},
+    setStreamingProperty: () => {},
+    setListener: (listener) => listeners.push(listener),
+    prepareAsync: (ready) => ready(),
+    play: () => {},
+  };
+  const { Player } = loadPlayer(avplay);
+  const errors = [];
+  Player.on("error", (error) => errors.push(error));
+
+  Player.play("https://provider.test/live/viewer/secret/417.ts");
+  listeners[0].onerror("PLAYER_ERROR_CONNECTION_FAILED");
+
+  assert.deepEqual(opened, [
+    "https://provider.test/live/viewer/secret/417.ts",
+    "https://provider.test/live/viewer/secret/417.m3u8",
+  ]);
+  assert.deepEqual(errors, []);
+
+  listeners[1].onerrormsg(
+    "mediaError",
+    JSON.stringify({
+      error_code: "PLAYER_ERROR_NOT_SUPPORTED_FORMAT",
+      codec: "h264",
+      detail_info: "decoder error",
+      url: "https://provider.test/live/viewer/secret/417.m3u8",
+    }),
+  );
+
+  assert.deepEqual(errors, [
+    "PLAYER_ERROR_NOT_SUPPORTED_FORMAT · h264 · decoder error",
+  ]);
+  assert.equal(errors[0].includes("viewer"), false);
+  assert.equal(errors[0].includes("secret"), false);
 });

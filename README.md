@@ -105,3 +105,10 @@ After the TV loads its playlist, the preview panel shows a six-digit phone pairi
 code. Enter that code on the phone, then search or filter the safe channel guide and
 tap a channel. The phone sends only a channel key; stream URLs and provider
 credentials remain on the TV.
+
+The relay stores paired TV and phone sessions in `~/.wolf-tv/relay-state.json`,
+so restarting it does not require pairing again. The file contains one-way
+bearer-token hashes, not the tokens themselves, and is created with owner-only
+permissions. Set `WOLF_TV_RELAY_STATE_PATH` to use a different location.
+Pairings made before Wolf TV 1.1.4 were memory-only and require one final pairing
+after the relay is upgraded.
